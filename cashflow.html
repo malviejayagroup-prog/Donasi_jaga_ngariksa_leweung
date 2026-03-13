@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cashflow Admin — Bahula Tani Nusantara</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020200;--bg1:#07070a;--bg2:#0d0d00;--bg3:#111108;
+  --gold1:#8a6000;--gold2:#c9920d;--gold3:#e8b830;--gold4:#f7d96a;--gold5:#fff3b0;
+  --green:#1a5c2a;--green2:#2d9e4a;--green3:#4ade80;
+  --red:#5c1a1a;--red2:#c0392b;--red3:#f87171;
+  --blue:#0d2a4a;--blue2:#1e6fa8;--blue3:#60b4f7;
+  --text:#f0e4c0;--dim:#c4a060;--ghost:#6a5a30;
+  --shimmer:linear-gradient(105deg,#7a5000 0%,#c9920d 30%,#f7d96a 50%,#c9920d 70%,#7a5000 100%);
+  --border:rgba(232,184,48,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh;}
+@keyframes shimmer{0%{background-position:200% center;}100%{background-position:-200% center;}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+/* ══ LOGIN SCREEN ══ */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;
+}
+.login-box{
+  width:min(380px,90vw);
+  background:rgba(13,13,0,.9);
+  border:1px solid var(--border);border-radius:24px;
+  padding:40px 32px;text-align:center;
+  animation:fadeIn .6s ease both;
+}
+.login-logo{font-size:48px;margin-bottom:20px;}
+.login-title{
+  font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;
+  background:var(--shimmer);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 4s linear infinite;
+  margin-bottom:6px;
+}
+.login-sub{font-size:11px;color:var(--ghost);margin-bottom:28px;letter-spacing:1px;text-transform:uppercase;}
+.login-input{
+  width:100%;padding:13px 16px;border:1px solid var(--border);border-radius:12px;
+  background:rgba(232,184,48,.03);color:var(--text);font-size:15px;
+  font-family:'DM Sans',sans-serif;text-align:center;letter-spacing:4px;
+  transition:all .25s;margin-bottom:14px;
+}
+.login-input:focus{outline:none;border-color:var(--gold3);box-shadow:0 0 0 3px rgba(232,184,48,.1);}
+.login-btn{
+  width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold3));
+  color:#000;border:none;border-radius:12px;padding:13px;
+  font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .3s;
+}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(232,184,48,.3);}
+.login-err{font-size:12px;color:var(--red3);margin-top:10px;display:none;}
+
+/* ══ MAIN DASHBOARD ══ */
+#dashboard{display:none;}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(2,2,0,.95);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.topbar-brand{
+  font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;
+  background:var(--shimmer);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 4s linear infinite;
+}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.badge-admin{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(232,184,48,.08);border:1px solid var(--border);
+  border-radius:20px;padding:4px 12px;font-size:11px;color:var(--gold2);font-weight:700;
+}
+.badge-admin::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green3);box-shadow:0 0 6px var(--green3);animation:pulse 1.5s infinite;}
+.btn-logout{
+  background:transparent;border:1px solid rgba(248,113,113,.3);
+  color:var(--red3);border-radius:20px;padding:5px 14px;
+  font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+}
+
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px;}
+
+/* ══ NAV TABS ══ */
+.nav-tabs{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;
+  border-bottom:1px solid var(--border);padding-bottom:0;
+}
+.tab-btn{
+  padding:10px 20px;border:none;background:transparent;
+  color:var(--ghost);font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:all .2s;
+}
+.tab-btn.active{color:var(--gold3);border-bottom-color:var(--gold3);}
+.tab-btn:hover:not(.active){color:var(--dim);}
+
+.tab-panel{display:none;animation:fadeIn .4s ease both;}
+.tab-panel.active{display:block;}
+
+/* ══ CARDS ══ */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
+.stat-card{
+  background:rgba(232,184,48,.04);border:1px solid var(--border);
+  border-radius:18px;padding:22px 20px;
+}
+.stat-icon{font-size:28px;margin-bottom:10px;}
+.stat-val{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(20px,3vw,28px);font-weight:700;
+  background:var(--shimmer);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 4s linear infinite;
+}
+.stat-label{font-size:10px;color:var(--ghost);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;}
+
+.card{background:rgba(13,13,0,.8);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px;}
+.card-title{
+  font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;
+  color:var(--gold3);margin-bottom:20px;display:flex;align-items:center;gap:8px;
+}
+
+/* ══ TABLE ══ */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ghost);
+  padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.tbl td{padding:12px 12px;font-size:13px;border-bottom:1px solid rgba(232,184,48,.05);}
+.tbl tr:hover td{background:rgba(232,184,48,.03);}
+.badge-in{background:rgba(74,222,128,.1);color:var(--green3);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;}
+.badge-out{background:rgba(248,113,113,.1);color:var(--red3);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;}
+.badge-proj{background:rgba(96,180,247,.1);color:var(--blue3);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;}
+.rp-in{color:var(--green3);font-family:'DM Mono',monospace;font-size:13px;}
+.rp-out{color:var(--red3);font-family:'DM Mono',monospace;font-size:13px;}
+.rp-gold{color:var(--gold3);font-family:'DM Mono',monospace;font-size:13px;}
+
+/* ══ FORM ══ */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold2);margin-bottom:6px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:10px;
+  font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);
+  background:rgba(232,184,48,.03);transition:all .2s;
+}
+.field input::placeholder{color:rgba(240,228,192,.2);}
+.field input:focus,.field select:focus{outline:none;border-color:var(--gold3);}
+.field select option{background:#111100;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.btn-add{
+  background:linear-gradient(135deg,var(--gold2),var(--gold3));
+  color:#000;border:none;border-radius:10px;padding:11px 22px;
+  font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .25s;
+}
+.btn-add:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,184,48,.3);}
+.btn-del{background:transparent;border:1px solid rgba(248,113,113,.3);color:var(--red3);
+  border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ══ ROI CARDS ══ */
+.roi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
+.roi-card{
+  background:rgba(13,13,0,.9);border:1px solid var(--border);border-radius:18px;padding:24px 20px;
+}
+.roi-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--gold3);margin-bottom:4px;}
+.roi-icon{font-size:28px;margin-bottom:12px;}
+.roi-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(232,184,48,.06);}
+.roi-row:last-child{border:none;}
+.roi-key{font-size:11px;color:var(--ghost);}
+.roi-val{font-size:12px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
+.roi-badge{
+  margin-top:12px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);
+  border-radius:8px;padding:8px 12px;text-align:center;
+  font-size:12px;font-weight:700;color:var(--green3);
+}
+
+/* ══ KALKULATOR ══ */
+.kalk-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.kalk-result{
+  background:rgba(232,184,48,.04);border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+}
+.kalk-result-val{
+  font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;
+  background:var(--shimmer);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 3s linear infinite;
+}
+.kalk-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(232,184,48,.07);}
+.kalk-row:last-child{border:none;}
+
+/* ══ PROGRESS BAR ══ */
+.prog-wrap{margin:8px 0;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--ghost);margin-bottom:5px;}
+.prog-bar{height:6px;background:rgba(232,184,48,.1);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold3));border-radius:3px;transition:width .8s ease;}
+
+/* ══ MONTH SELECTOR ══ */
+.month-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.month-btn{background:transparent;border:1px solid var(--border);color:var(--dim);
+  border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.month-btn:hover{border-color:var(--gold3);color:var(--gold3);}
+.month-label{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold3);}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(10,8,0,.95);border:1px solid rgba(232,184,48,.4);color:var(--gold);
+  padding:10px 22px;border-radius:30px;font-size:12px;font-weight:700;
+  transition:transform .3s;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+@media(max-width:640px){
+  .kalk-wrap{grid-template-columns:1fr;}
+  .row2,.row3{grid-template-columns:1fr;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🌿</div>
+    <div class="login-title">Bahula Tani Nusantara</div>
+    <div class="login-sub">Panel Keuangan Admin</div>
+    <input class="login-input" type="password" id="passInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Masuk</button>
+    <div class="login-err" id="loginErr">Password salah. Coba lagi.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-brand">🌿 Bahula Tani — Cashflow</div>
+    <div class="topbar-right">
+      <div class="badge-admin">Admin</div>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- TABS -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="showTab('ringkasan')">📊 Ringkasan</button>
+      <button class="tab-btn" onclick="showTab('laporan')">📋 Laporan Bulanan</button>
+      <button class="tab-btn" onclick="showTab('roi')">📈 Proyeksi ROI</button>
+      <button class="tab-btn" onclick="showTab('kalkulator')">🧮 Kalkulator Bagi Hasil</button>
+      <button class="tab-btn" onclick="showTab('input')">➕ Input Transaksi</button>
+    </div>
+
+    <!-- ═══ TAB: RINGKASAN ═══ -->
+    <div class="tab-panel active" id="tab-ringkasan">
+      <div class="stat-grid" id="statGrid"></div>
+
+      <div class="card">
+        <div class="card-title">📊 Arus Kas — Semua Waktu</div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Pemasukan</span><span id="progInVal">Rp 0</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="progIn" style="width:0%;background:linear-gradient(90deg,#1a7a3a,#4ade80);"></div></div>
+        </div>
+        <div class="prog-wrap" style="margin-top:12px;">
+          <div class="prog-label"><span>Pengeluaran</span><span id="progOutVal">Rp 0</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="progOut" style="width:0%;background:linear-gradient(90deg,#7a1a1a,#f87171);"></div></div>
+        </div>
+        <div id="saldoBox" style="margin-top:20px;padding:16px;background:rgba(232,184,48,.05);border:1px solid var(--border);border-radius:12px;text-align:center;">
+          <div style="font-size:11px;color:var(--ghost);text-transform:uppercase;letter-spacing:1.5px;">Saldo Bersih</div>
+          <div class="stat-val" id="saldoBersih" style="font-size:32px;">Rp 0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🕐 Transaksi Terbaru</div>
+        <div style="overflow-x:auto;">
+          <table class="tbl" id="tblRecent">
+            <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Jenis</th><th>Nominal</th></tr></thead>
+            <tbody id="tbodyRecent"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: LAPORAN BULANAN ═══ -->
+    <div class="tab-panel" id="tab-laporan">
+      <div class="month-nav">
+        <button class="month-btn" onclick="prevMonth()">←</button>
+        <div class="month-label" id="monthLabel"></div>
+        <button class="month-btn" onclick="nextMonth()">→</button>
+      </div>
+
+      <div class="stat-grid" id="statBulan"></div>
+
+      <div class="card">
+        <div class="card-title">📋 Detail Transaksi Bulan Ini</div>
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Jenis</th><th>Nominal</th><th>Aksi</th></tr></thead>
+            <tbody id="tbodyBulan"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PROYEKSI ROI ═══ -->
+    <div class="tab-panel" id="tab-roi">
+      <p style="color:var(--dim);font-size:13px;margin-bottom:24px;line-height:1.8;">Estimasi proyeksi keuntungan per potensi usaha di Kampung Pasir Ipis. Data ini untuk keperluan presentasi investor.</p>
+      <div class="roi-grid" id="roiGrid"></div>
+    </div>
+
+    <!-- ═══ TAB: KALKULATOR BAGI HASIL ═══ -->
+    <div class="tab-panel" id="tab-kalkulator">
+      <div class="kalk-wrap">
+        <div class="card">
+          <div class="card-title">🧮 Input Simulasi</div>
+          <div class="field">
+            <label>Nama Investor</label>
+            <input id="kNama" placeholder="Nama investor">
+          </div>
+          <div class="field">
+            <label>Nominal Investasi (Rp)</label>
+            <input id="kNominal" type="number" placeholder="10000000" oninput="hitungBagiHasil()">
+          </div>
+          <div class="field">
+            <label>Pilih Usaha</label>
+            <select id="kUsaha" onchange="hitungBagiHasil()">
+              <option value="sawah">🌾 Sawah Padi (7,5 Ha)</option>
+              <option value="kopi">☕ Kebun Kopi</option>
+              <option value="camping">⛺ Camping Ground</option>
+              <option value="kohe">🐐 Pupuk Kohe Kambing</option>
+              <option value="traktor">🚜 Jasa Traktor</option>
+              <option value="beras">🏭 Pengolahan Beras</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Durasi (Bulan)</label>
+            <input id="kDurasi" type="number" value="12" min="1" max="60" oninput="hitungBagiHasil()">
+          </div>
+          <div class="field">
+            <label>Skema Bagi Hasil</label>
+            <select id="kSkema" onchange="hitungBagiHasil()">
+              <option value="60">60% Investor · 40% Yayasan</option>
+              <option value="70">70% Investor · 30% Yayasan</option>
+              <option value="50">50% Investor · 50% Yayasan</option>
+              <option value="80">80% Investor · 20% Yayasan</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <div class="kalk-result" style="margin-bottom:16px;">
+            <div style="font-size:11px;color:var(--ghost);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Estimasi Keuntungan Investor</div>
+            <div class="kalk-result-val" id="kHasil">Rp 0</div>
+            <div style="font-size:11px;color:var(--ghost);margin-top:4px;" id="kPeriode">per tahun</div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title" style="font-size:16px;">📄 Rincian Simulasi</div>
+            <div class="kalk-row"><span style="font-size:12px;color:var(--ghost);">Modal Investasi</span><span class="rp-gold" id="kModalOut">Rp 0</span></div>
+            <div class="kalk-row"><span style="font-size:12px;color:var(--ghost);">Total Pendapatan Usaha</span><span class="rp-in" id="kTotalUsaha">Rp 0</span></div>
+            <div class="kalk-row"><span style="font-size:12px;color:var(--ghost);">Bagian Investor (<span id="kPctLabel">60</span>%)</span><span class="rp-in" id="kBagianInv">Rp 0</span></div>
+            <div class="kalk-row"><span style="font-size:12px;color:var(--ghost);">Bagian Yayasan</span><span class="rp-gold" id="kBagianYay">Rp 0</span></div>
+            <div class="kalk-row" style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px;">
+              <span style="font-size:12px;color:var(--ghost);">ROI</span>
+              <span style="font-size:14px;font-weight:800;color:var(--green3);" id="kROI">0%</span>
+            </div>
+            <div class="kalk-row">
+              <span style="font-size:12px;color:var(--ghost);">Balik Modal</span>
+              <span style="font-size:13px;font-weight:700;color:var(--gold3);" id="kPayback">— bulan</span>
+            </div>
+          </div>
+
+          <button class="btn-add" style="width:100%;margin-top:12px;" onclick="cetakSimulasi()">🖨️ Cetak / Simpan Simulasi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: INPUT TRANSAKSI ═══ -->
+    <div class="tab-panel" id="tab-input">
+      <div class="card">
+        <div class="card-title">➕ Tambah Transaksi Baru</div>
+        <div class="row2">
+          <div class="field">
+            <label>Tanggal ⭐</label>
+            <input type="date" id="iTgl">
+          </div>
+          <div class="field">
+            <label>Jenis ⭐</label>
+            <select id="iJenis">
+              <option value="masuk">➕ Pemasukan</option>
+              <option value="keluar">➖ Pengeluaran</option>
+              <option value="proyeksi">📈 Proyeksi</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Nominal (Rp) ⭐</label>
+            <input type="number" id="iNominal" placeholder="100000">
+          </div>
+          <div class="field">
+            <label>Kategori</label>
+            <select id="iKategori">
+              <option>Donasi</option>
+              <option>Investasi</option>
+              <option>Hasil Panen</option>
+              <option>Penjualan Pupuk</option>
+              <option>Jasa Traktor</option>
+              <option>Camping Ground</option>
+              <option>Operasional</option>
+              <option>Bibit & Pupuk</option>
+              <option>Upah Petani</option>
+              <option>Bagi Hasil Investor</option>
+              <option>Lain-lain</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Keterangan ⭐</label>
+          <input id="iKet" placeholder="Contoh: Donasi dari Budi Santoso">
+        </div>
+        <div class="field">
+          <label>Sumber / Tujuan</label>
+          <input id="iSumber" placeholder="Contoh: Transfer BCA, Petani Pak Asep">
+        </div>
+        <button class="btn-add" onclick="tambahTransaksi()">✅ Simpan Transaksi</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Semua Transaksi</div>
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Jenis</th><th>Nominal</th><th>Aksi</th></tr></thead>
+            <tbody id="tbodyAll"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+</div><!-- /dashboard -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ AUTH ══
+var PASS = 'bahula2026';
+function doLogin(){
+  var p=document.getElementById('passInput').value;
+  if(p===PASS){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    init();
+  } else {
+    var e=document.getElementById('loginErr');
+    e.style.display='block';
+    setTimeout(function(){e.style.display='none';},3000);
+  }
+}
+function doLogout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('passInput').value='';
+}
+
+// ══ TABS ══
+function showTab(id){
+  document.querySelectorAll('.tab-panel').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(el){el.classList.remove('active');});
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='laporan') renderBulan();
+  if(id==='ringkasan') renderRingkasan();
+}
+
+// ══ DATA STORAGE ══
+var KEY = 'bahula_cf';
+function getData(){ try{ return JSON.parse(localStorage.getItem(KEY))||[]; }catch(e){ return []; } }
+function saveData(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+
+// ══ CURRENT MONTH ══
+var curY = new Date().getFullYear();
+var curM = new Date().getMonth();
+var BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function prevMonth(){ curM--; if(curM<0){curM=11;curY--;} renderBulan(); }
+function nextMonth(){ curM++; if(curM>11){curM=0;curY++;} renderBulan(); }
+
+// ══ FORMAT ══
+function fRp(n){
+  n=parseInt(n)||0;
+  if(n>=1000000000) return 'Rp '+(n/1000000000).toFixed(1)+'M';
+  if(n>=1000000) return 'Rp '+(n/1000000).toFixed(1)+'jt';
+  if(n>=1000) return 'Rp '+(n/1000).toFixed(0)+'rb';
+  return 'Rp '+n.toLocaleString('id-ID');
+}
+function fDate(s){ var d=new Date(s); return d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }
+function escH(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ══ INIT ══
+function init(){
+  // Set today's date
+  document.getElementById('iTgl').value = new Date().toISOString().slice(0,10);
+  document.getElementById('monthLabel').textContent = BULAN[curM]+' '+curY;
+  renderRingkasan();
+  renderROI();
+  hitungBagiHasil();
+}
+
+// ══ RINGKASAN ══
+function renderRingkasan(){
+  var data = getData();
+  var totalIn = data.filter(function(d){return d.jenis==='masuk';}).reduce(function(s,d){return s+d.nominal;},0);
+  var totalOut = data.filter(function(d){return d.jenis==='keluar';}).reduce(function(s,d){return s+d.nominal;},0);
+  var saldo = totalIn - totalOut;
+
+  document.getElementById('statGrid').innerHTML = 
+    statCard('💰','Total Pemasukan',fRp(totalIn))+
+    statCard('💸','Total Pengeluaran',fRp(totalOut))+
+    statCard('📊','Saldo Bersih',fRp(saldo))+
+    statCard('📝','Jumlah Transaksi',data.length+' transaksi');
+
+  document.getElementById('progInVal').textContent = fRp(totalIn);
+  document.getElementById('progOutVal').textContent = fRp(totalOut);
+  var max = Math.max(totalIn, totalOut, 1);
+  document.getElementById('progIn').style.width = (totalIn/max*100)+'%';
+  document.getElementById('progOut').style.width = (totalOut/max*100)+'%';
+  document.getElementById('saldoBersih').textContent = fRp(saldo);
+  document.getElementById('saldoBersih').style.color = saldo>=0 ? 'var(--green3)' : 'var(--red3)';
+
+  var recent = data.slice().sort(function(a,b){return new Date(b.tgl)-new Date(a.tgl);}).slice(0,10);
+  document.getElementById('tbodyRecent').innerHTML = recent.map(rowHtml).join('') || 
+    '<tr><td colspan="5" style="text-align:center;color:var(--ghost);padding:24px;">Belum ada transaksi</td></tr>';
+}
+
+function statCard(icon,label,val){
+  return '<div class="stat-card"><div class="stat-icon">'+icon+'</div><div class="stat-val">'+val+'</div><div class="stat-label">'+label+'</div></div>';
+}
+
+function rowHtml(d,showDel){
+  var badge = d.jenis==='masuk' ? '<span class="badge-in">Masuk</span>' : 
+              d.jenis==='keluar' ? '<span class="badge-out">Keluar</span>' :
+              '<span class="badge-proj">Proyeksi</span>';
+  var rpClass = d.jenis==='masuk' ? 'rp-in' : d.jenis==='keluar' ? 'rp-out' : 'rp-gold';
+  var sign = d.jenis==='masuk' ? '+' : d.jenis==='keluar' ? '-' : '~';
+  var del = showDel ? '<button class="btn-del" onclick="hapus(\''+d.id+'\')">Hapus</button>' : '';
+  return '<tr><td>'+fDate(d.tgl)+'</td><td>'+escH(d.ket)+'<br><span style="font-size:10px;color:var(--ghost);">'+escH(d.sumber||'')+'</span></td><td>'+escH(d.kategori)+'</td><td>'+badge+'</td><td class="'+rpClass+'">'+sign+fRp(d.nominal)+'</td>'+(showDel?'<td>'+del+'</td>':'')+'</tr>';
+}
+
+// ══ LAPORAN BULANAN ══
+function renderBulan(){
+  document.getElementById('monthLabel').textContent = BULAN[curM]+' '+curY;
+  var data = getData().filter(function(d){
+    var dt = new Date(d.tgl);
+    return dt.getFullYear()===curY && dt.getMonth()===curM;
+  });
+  var totalIn = data.filter(function(d){return d.jenis==='masuk';}).reduce(function(s,d){return s+d.nominal;},0);
+  var totalOut = data.filter(function(d){return d.jenis==='keluar';}).reduce(function(s,d){return s+d.nominal;},0);
+  
+  document.getElementById('statBulan').innerHTML =
+    statCard('📥','Pemasukan Bulan Ini',fRp(totalIn))+
+    statCard('📤','Pengeluaran Bulan Ini',fRp(totalOut))+
+    statCard('💼','Saldo Bulan Ini',fRp(totalIn-totalOut))+
+    statCard('📑','Transaksi',data.length+' transaksi');
+
+  document.getElementById('tbodyBulan').innerHTML = data.sort(function(a,b){return new Date(b.tgl)-new Date(a.tgl);}).map(function(d){return rowHtml(d,true);}).join('') ||
+    '<tr><td colspan="6" style="text-align:center;color:var(--ghost);padding:24px;">Belum ada transaksi bulan ini</td></tr>';
+}
+
+// ══ TAMBAH & HAPUS ══
+function tambahTransaksi(){
+  var tgl=document.getElementById('iTgl').value;
+  var jenis=document.getElementById('iJenis').value;
+  var nominal=parseInt(document.getElementById('iNominal').value);
+  var ket=document.getElementById('iKet').value.trim();
+  var kategori=document.getElementById('iKategori').value;
+  var sumber=document.getElementById('iSumber').value.trim();
+  if(!tgl||!nominal||!ket){alert('Tanggal, nominal, dan keterangan wajib diisi!');return;}
+  var data=getData();
+  data.push({id:Date.now().toString(),tgl:tgl,jenis:jenis,nominal:nominal,ket:ket,kategori:kategori,sumber:sumber});
+  saveData(data);
+  document.getElementById('iNominal').value='';
+  document.getElementById('iKet').value='';
+  document.getElementById('iSumber').value='';
+  renderAll();
+  toast('✅ Transaksi berhasil disimpan!');
+}
+
+function hapus(id){
+  if(!confirm('Hapus transaksi ini?')) return;
+  var data=getData().filter(function(d){return d.id!==id;});
+  saveData(data);
+  renderAll();
+  toast('🗑️ Transaksi dihapus');
+}
+
+function renderAll(){
+  renderRingkasan();
+  if(document.getElementById('tab-laporan').classList.contains('active')) renderBulan();
+  var all=getData().sort(function(a,b){return new Date(b.tgl)-new Date(a.tgl);});
+  document.getElementById('tbodyAll').innerHTML = all.map(function(d){return rowHtml(d,true);}).join('') ||
+    '<tr><td colspan="6" style="text-align:center;color:var(--ghost);padding:24px;">Belum ada transaksi</td></tr>';
+}
+
+// ══ ROI DATA ══
+var roiData = [
+  {icon:'🌾',nama:'Sawah Padi 7,5 Ha',modal:50000000,pendapatanPerTahun:135000000,biayaPerTahun:45000000,waktuBalikModal:6,catatan:'2 musim panen · 6.000 kg/ha · Harga Rp 5.000/kg'},
+  {icon:'☕',nama:'Kebun Kopi Robusta',modal:30000000,pendapatanPerTahun:48000000,biayaPerTahun:12000000,waktuBalikModal:9,catatan:'3-5 tahun panen penuh · Harga premium'},
+  {icon:'⛺',nama:'Camping Ground',modal:25000000,pendapatanPerTahun:72000000,biayaPerTahun:18000000,waktuBalikModal:5,catatan:'Weekend & liburan · 20 tenda · Rp 150rb/malam'},
+  {icon:'🐐',nama:'Pupuk Kohe Kambing',modal:15000000,pendapatanPerTahun:36000000,biayaPerTahun:8000000,waktuBalikModal:6,catatan:'Bahan baku gratis · Permintaan tinggi'},
+  {icon:'🚜',nama:'Jasa Traktor',modal:45000000,pendapatanPerTahun:54000000,biayaPerTahun:12000000,waktuBalikModal:11,catatan:'Sewa Rp 300rb/jam · 15 ha/bulan'},
+  {icon:'🏭',nama:'Pengolahan Beras',modal:35000000,pendapatanPerTahun:84000000,biayaPerTahun:30000000,waktuBalikModal:7,catatan:'Nilai tambah 3-4x · Branded rice'},
+];
+
+function renderROI(){
+  document.getElementById('roiGrid').innerHTML = roiData.map(function(r){
+    var profit = r.pendapatanPerTahun - r.biayaPerTahun;
+    var roi = Math.round(profit/r.modal*100);
+    return '<div class="roi-card">'+
+      '<div class="roi-icon">'+r.icon+'</div>'+
+      '<div class="roi-name">'+r.nama+'</div>'+
+      '<div class="roi-row"><span class="roi-key">Modal Awal</span><span class="roi-val">'+fRp(r.modal)+'</span></div>'+
+      '<div class="roi-row"><span class="roi-key">Pendapatan/Tahun</span><span class="roi-val" style="color:var(--green3);">'+fRp(r.pendapatanPerTahun)+'</span></div>'+
+      '<div class="roi-row"><span class="roi-key">Biaya/Tahun</span><span class="roi-val" style="color:var(--red3);">'+fRp(r.biayaPerTahun)+'</span></div>'+
+      '<div class="roi-row"><span class="roi-key">Profit Bersih/Tahun</span><span class="roi-val" style="color:var(--gold3);">'+fRp(profit)+'</span></div>'+
+      '<div class="roi-row"><span class="roi-key">Balik Modal</span><span class="roi-val">~'+r.waktuBalikModal+' bulan</span></div>'+
+      '<div class="roi-badge">ROI '+roi+'%/tahun</div>'+
+      '<div style="font-size:10px;color:var(--ghost);margin-top:8px;">📌 '+r.catatan+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ══ KALKULATOR BAGI HASIL ══
+var usahaData = {
+  sawah:{rate:0.225},kopi:{rate:0.12},camping:{rate:0.18},
+  kohe:{rate:0.187},traktor:{rate:0.093},beras:{rate:0.154}
+};
+
+function hitungBagiHasil(){
+  var modal = parseInt(document.getElementById('kNominal').value)||0;
+  var usaha = document.getElementById('kUsaha').value;
+  var durasi = parseInt(document.getElementById('kDurasi').value)||12;
+  var pct = parseInt(document.getElementById('kSkema').value)||60;
+  
+  var ratePerBulan = usahaData[usaha].rate / 12;
+  var totalUsaha = modal * ratePerBulan * durasi;
+  var bagianInv = totalUsaha * pct / 100;
+  var bagianYay = totalUsaha * (100-pct) / 100;
+  var roi = modal > 0 ? Math.round(bagianInv/modal*100) : 0;
+  var payback = modal > 0 && bagianInv > 0 ? Math.round(modal/(bagianInv/durasi)) : 0;
+
+  document.getElementById('kHasil').textContent = fRp(bagianInv);
+  document.getElementById('kPeriode').textContent = 'dalam '+durasi+' bulan';
+  document.getElementById('kModalOut').textContent = fRp(modal);
+  document.getElementById('kTotalUsaha').textContent = fRp(totalUsaha);
+  document.getElementById('kBagianInv').textContent = fRp(bagianInv);
+  document.getElementById('kBagianYay').textContent = fRp(bagianYay);
+  document.getElementById('kPctLabel').textContent = pct;
+  document.getElementById('kROI').textContent = roi+'%';
+  document.getElementById('kPayback').textContent = '~'+payback+' bulan';
+}
+
+function cetakSimulasi(){
+  var nama = document.getElementById('kNama').value||'Investor';
+  var modal = document.getElementById('kNominal').value;
+  var usaha = document.getElementById('kUsaha').options[document.getElementById('kUsaha').selectedIndex].text;
+  var hasil = document.getElementById('kHasil').textContent;
+  var roi = document.getElementById('kROI').textContent;
+  var teks = '🌿 SIMULASI BAGI HASIL\nBahula Tani Nusantara\n\nNama: '+nama+'\nModal: Rp '+parseInt(modal).toLocaleString('id-ID')+'\nUsaha: '+usaha+'\nEstimasi Keuntungan: '+hasil+'\nROI: '+roi+'\n\nKontak: 083871666136';
+  if(navigator.clipboard) navigator.clipboard.writeText(teks).then(function(){toast('📋 Simulasi tersalin!');});
+}
+
+// ══ TOAST ══
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+// Enter to login
+document.getElementById('passInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter') doLogin();
+});
+</script>
+</body>
+</html>
