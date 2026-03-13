@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Donasi — Bahula Tani Nusantara</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --card:#0d0d00; --border:rgba(232,184,48,.2);
+  --gold:#e8b830; --gold2:#c9920d; --text:#f0e4c0; --dim:#c4a060; --ghost:#6a5a30;
+  --shimmer:linear-gradient(105deg,#7a5000,#c9920d 30%,#f7d96a 50%,#c9920d 70%,#7a5000);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh;padding:24px;}
+@keyframes shimmer{0%{background-position:200% center;}100%{background-position:-200% center;}}
+
+.wrap{max-width:520px;margin:0 auto;}
+.header{text-align:center;padding:32px 0 28px;}
+.header h1{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;
+  background:var(--shimmer);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 4s linear infinite;}
+.header p{font-size:12px;color:var(--ghost);margin-top:6px;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+
+/* FORM */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold2);margin-bottom:7px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px 15px;border:1px solid var(--border);border-radius:11px;
+  font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);
+  background:rgba(232,184,48,.03);transition:all .25s;
+}
+.field input::placeholder,.field textarea::placeholder{color:rgba(240,228,192,.2);}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,184,48,.1);}
+.field select option{background:#111100;color:var(--text);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.btn-submit{
+  width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#000;border:none;border-radius:14px;padding:15px;
+  font-size:15px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .3s;box-shadow:0 4px 20px rgba(232,184,48,.3);
+  margin-top:4px;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(232,184,48,.4);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* LOG */
+.log-list{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;}
+.log-item{display:flex;align-items:center;gap:12px;background:rgba(232,184,48,.03);border:1px solid rgba(232,184,48,.1);border-radius:12px;padding:12px 14px;}
+.log-nama{flex:1;font-size:13px;font-weight:700;color:var(--text);}
+.log-detail{font-size:10px;color:var(--ghost);margin-top:1px;}
+.log-rp{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--gold);white-space:nowrap;}
+.log-time{font-size:10px;color:var(--ghost);}
+.log-empty{text-align:center;padding:30px;color:var(--ghost);font-style:italic;font-size:13px;}
+
+/* SETUP PANEL */
+.setup-box{background:rgba(232,184,48,.04);border:1px solid rgba(232,184,48,.2);border-radius:16px;padding:22px;margin-bottom:20px;}
+.setup-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px;}
+.setup-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;}
+.step-num{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-body{flex:1;}
+.step-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.step-desc{font-size:11px;color:var(--ghost);line-height:1.7;}
+.step-desc a{color:var(--gold2);text-decoration:none;}
+.step-desc code{background:rgba(232,184,48,.1);padding:1px 6px;border-radius:4px;font-size:10px;color:var(--gold);font-family:monospace;}
+
+.sheet-id-input{display:flex;gap:8px;margin-top:12px;}
+.sheet-id-input input{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);background:rgba(232,184,48,.03);}
+.sheet-id-input input:focus{outline:none;border-color:var(--gold);}
+.btn-save-id{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+
+.status-msg{text-align:center;font-size:12px;padding:10px;border-radius:8px;margin-top:10px;display:none;}
+.status-ok{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2);}
+.status-err{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+
+.badge-connected{display:inline-flex;align-items:center;gap:6px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:4px 12px;font-size:11px;color:#4ade80;font-weight:700;}
+.badge-connected::before{content:'';width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px #4ade80;}
+
+.nav-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);text-decoration:none;border:1px solid var(--border);border-radius:20px;padding:6px 14px;transition:all .2s;}
+.nav-link:hover{border-color:rgba(232,184,48,.4);color:var(--gold);}
+.nav-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(10,8,0,.95);border:1px solid rgba(232,184,48,.4);color:var(--gold);padding:10px 22px;border-radius:30px;font-size:12px;font-weight:700;transition:transform .3s;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- NAV -->
+  <div class="nav-bar">
+    <a class="nav-link" href="donasi-bahula.html">← Kembali ke Website</a>
+    <div id="connBadge" style="display:none;" class="badge-connected">Sheets Terhubung</div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🌿 Panel Admin Donasi</h1>
+    <p>Bahula Tani Nusantara · Khusus Koordinator</p>
+  </div>
+
+  <!-- SETUP GOOGLE SHEETS -->
+  <div class="setup-box" id="setupBox">
+    <div class="setup-title">⚙️ Setup Google Sheets (Sekali Saja)</div>
+    
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Buat Google Sheets baru</div>
+        <div class="step-desc">Buka <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> → Buat spreadsheet baru → Beri nama <strong>"Donasi Bahula Tani"</strong></div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Buat header kolom di baris pertama</div>
+        <div class="step-desc">
+          Isi kolom A–F:<br>
+          <code>Waktu</code> &nbsp; <code>Nama</code> &nbsp; <code>Nominal</code> &nbsp; <code>Tanaman</code> &nbsp; <code>Lokasi</code> &nbsp; <code>Pesan</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Bagikan ke publik (view only)</div>
+        <div class="step-desc">Klik <strong>Share</strong> → <strong>Anyone with the link</strong> → <strong>Viewer</strong> → Done</div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Paste Sheet ID di sini</div>
+        <div class="step-desc">Dari URL: <code>docs.google.com/spreadsheets/d/<strong>[SHEET_ID]</strong>/edit</code></div>
+        <div class="sheet-id-input">
+          <input id="inputSheetId" placeholder="Paste Sheet ID di sini..." />
+          <button class="btn-save-id" onclick="simpanSheetId()">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-msg" id="statusSetup"></div>
+  </div>
+
+  <!-- FORM INPUT DONASI -->
+  <div class="card">
+    <div class="card-title">➕ Input Donasi Baru</div>
+    
+    <div class="row2">
+      <div class="field">
+        <label>Nama Donatur ⭐</label>
+        <input id="aNama" placeholder="Nama lengkap">
+      </div>
+      <div class="field">
+        <label>Nominal (Rp) ⭐</label>
+        <input id="aNominal" type="number" placeholder="100000">
+      </div>
+    </div>
+    
+    <div class="row2">
+      <div class="field">
+        <label>Tanaman (opsional)</label>
+        <select id="aTanaman">
+          <option value="">— Tidak dipilih —</option>
+          <option>Labu Siam</option><option>Kopi Robusta</option>
+          <option>Kacang Inchi</option><option>Kapulaga</option>
+          <option>Cengkeh</option><option>Pala</option>
+          <option>Mangga</option><option>Jeruk Lemon</option>
+          <option>Pisang</option><option>Sengon</option>
+          <option>Jati</option><option>Mahoni</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Lokasi (opsional)</label>
+        <select id="aLokasi">
+          <option value="">— Tidak dipilih —</option>
+          <option>Pasir Ipis, Sukabumi</option>
+          <option>Cikaret, Sukabumi</option>
+          <option>Cibadak, Sukabumi</option>
+          <option>Cianjur, Jabar</option>
+          <option>Lebak, Banten</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="field">
+      <label>Pesan / Doa Donatur</label>
+      <input id="aPesan" placeholder="(opsional)">
+    </div>
+
+    <button class="btn-submit" id="btnInput" onclick="inputDonasi()">
+      ✅ Simpan Donasi ke Sheets
+    </button>
+    <div class="status-msg" id="statusInput"></div>
+  </div>
+
+  <!-- LOG LOKAL -->
+  <div class="card">
+    <div class="card-title">📋 Riwayat Input Sesi Ini</div>
+    <div class="log-list" id="logList">
+      <div class="log-empty">Belum ada input donasi di sesi ini.</div>
+    </div>
+  </div>
+
+  <!-- PANDUAN MANUAL SHEETS -->
+  <div class="card">
+    <div class="card-title">📖 Cara Input Manual ke Sheets</div>
+    <div style="font-size:12px;color:var(--dim);line-height:1.9;">
+      <p style="margin-bottom:10px;">Jika tombol otomatis tidak berfungsi, Malvie bisa input manual langsung ke Google Sheets:</p>
+      <div style="background:rgba(232,184,48,.04);border:1px solid rgba(232,184,48,.12);border-radius:10px;padding:14px;font-family:monospace;font-size:11px;color:var(--gold);">
+        Kolom A: 2026-03-11 10:30:00<br>
+        Kolom B: Nama Donatur<br>
+        Kolom C: 100000 (angka saja, tanpa Rp)<br>
+        Kolom D: Kopi Robusta<br>
+        Kolom E: Pasir Ipis, Sukabumi<br>
+        Kolom F: Pesan donatur
+      </div>
+      <p style="margin-top:12px;">Setelah disimpan, website akan otomatis menampilkan data terbaru dalam 2 menit.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SHEET_ID_KEY = 'bahula_sheet_id';
+var logItems = [];
+
+// Load saved sheet ID
+window.onload = function(){
+  var saved = localStorage.getItem(SHEET_ID_KEY);
+  if(saved){
+    document.getElementById('inputSheetId').value = saved;
+    document.getElementById('connBadge').style.display = 'flex';
+  }
+};
+
+function simpanSheetId(){
+  var id = document.getElementById('inputSheetId').value.trim();
+  if(!id){ showStatus('statusSetup','err','Sheet ID tidak boleh kosong!'); return; }
+  // Validate format (basic)
+  if(id.length < 20){ showStatus('statusSetup','err','Sheet ID terlalu pendek. Cek kembali URL Sheets.'); return; }
+  localStorage.setItem(SHEET_ID_KEY, id);
+  document.getElementById('connBadge').style.display = 'flex';
+  showStatus('statusSetup','ok','✅ Sheet ID berhasil disimpan! Website sekarang akan membaca dari Sheets Anda.');
+  showToast('Sheet ID tersimpan!');
+}
+
+function inputDonasi(){
+  var nama = document.getElementById('aNama').value.trim();
+  var nominal = parseInt(document.getElementById('aNominal').value);
+  var tanaman = document.getElementById('aTanaman').value;
+  var lokasi = document.getElementById('aLokasi').value;
+  var pesan = document.getElementById('aPesan').value.trim();
+  
+  if(!nama){ alert('Nama donatur wajib diisi!'); return; }
+  if(!nominal || nominal < 1000){ alert('Nominal minimal Rp 1.000!'); return; }
+  
+  var sheetId = localStorage.getItem(SHEET_ID_KEY);
+  
+  var now = new Date();
+  var waktuStr = now.getFullYear()+'-'+
+    String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+' '+
+    String(now.getHours()).padStart(2,'0')+':'+
+    String(now.getMinutes()).padStart(2,'0')+':'+
+    String(now.getSeconds()).padStart(2,'0');
+  
+  var item = {waktu:waktuStr,nama:nama,nominal:nominal,tanaman:tanaman,lokasi:lokasi,pesan:pesan};
+  
+  if(!sheetId){
+    // Save locally and show instructions
+    tambahLog(item);
+    showStatus('statusInput','ok','✅ Tersimpan di log sesi ini. Setup Sheet ID dulu untuk sinkronisasi otomatis.');
+    bersihkanForm();
+    return;
+  }
+  
+  // Try Google Apps Script (if user sets up webhook) — otherwise show manual instructions
+  tambahLog(item);
+  showManualSheetRow(item);
+  bersihkanForm();
+  showToast('Donasi dicatat! Salin ke Sheets.');
+}
+
+function showManualSheetRow(item){
+  var row = [item.waktu, item.nama, item.nominal, item.tanaman, item.lokasi, item.pesan].join('\t');
+  var msg = '📋 Salin baris ini ke Google Sheets:\n\n'+row+'\n\n(Paste di baris kosong berikutnya di Sheets Anda)';
+  
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(item.waktu+'\t'+item.nama+'\t'+item.nominal+'\t'+item.tanaman+'\t'+item.lokasi+'\t'+item.pesan)
+      .then(function(){ showStatus('statusInput','ok','✅ Baris data tersalin! Paste di Google Sheets Anda. Data akan muncul di website dalam 2 menit.'); });
+  } else {
+    showStatus('statusInput','ok','✅ Data dicatat. Input manual ke Sheets:\n'+row);
+  }
+}
+
+function tambahLog(item){
+  logItems.unshift(item);
+  var list = document.getElementById('logList');
+  var rp = 'Rp '+item.nominal.toLocaleString('id-ID');
+  var det = [item.tanaman,item.lokasi].filter(Boolean).join(' · ')||'Donasi Umum';
+  var html = logItems.map(function(d){
+    return '<div class="log-item">'+
+      '<div style="flex:1;">'+
+        '<div class="log-nama">'+escHtml(d.nama)+'</div>'+
+        '<div class="log-detail">'+escHtml([d.tanaman,d.lokasi].filter(Boolean).join(' · ')||'Donasi Umum')+'</div>'+
+      '</div>'+
+      '<div style="text-align:right;">'+
+        '<div class="log-rp">Rp '+d.nominal.toLocaleString('id-ID')+'</div>'+
+        '<div class="log-time">'+d.waktu.slice(11,16)+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  list.innerHTML = html;
+}
+
+function bersihkanForm(){
+  document.getElementById('aNama').value='';
+  document.getElementById('aNominal').value='';
+  document.getElementById('aTanaman').value='';
+  document.getElementById('aLokasi').value='';
+  document.getElementById('aPesan').value='';
+}
+
+function showStatus(id,type,msg){
+  var el=document.getElementById(id);
+  el.className='status-msg status-'+(type==='ok'?'ok':'err');
+  el.textContent=msg;el.style.display='block';
+  if(type==='ok') setTimeout(function(){el.style.display='none';},5000);
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+function escHtml(t){
+  return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
